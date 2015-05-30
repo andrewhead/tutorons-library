@@ -1,4 +1,0 @@
-[program:{{ appname }}]
-command={{ venv }}/bin/gunicorn {{ appname }}.wsgi --bind 127.0.0.1:{{ localport }} --pid /tmp/gunicorn-{{ appname }}.pid
-directory={{ djdir }}
-environment=DJANGO_SETTINGS_MODULE="{{ djsettings }}"

@@ -1,9 +1,0 @@
-domain: stackskim.info
-localport: 8001
-appname: skim
-logfile: /var/log/stackskim.log
-repo: https://github.com/andrewhead/Tutorons.git
-djdir: "{{ src }}/{{ appname }}"
-awsbucket: stackskim
-djkey: stackskim.key
-staticfiles: true

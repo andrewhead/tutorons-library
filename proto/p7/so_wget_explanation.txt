@@ -1,7 +1,0 @@
-<p style="font-family: &quot;Courier New&quot;, Courier, monospace;">This wget, at a high level, scrapes documents of type ".pdf" from a subdomain of math.stanford.edu. <span style="color:blue;"><u>More...</u></span></p>
-<p style="font-family: &quot;Courier New&quot;, Courier, monospace;">
-  <strong>--random wait</strong> modifies the timeout between pulls.<br>
-  <strong>-p</strong> pulls all content necessary to display the page.<br>
-  <strong>-e robots=off</strong> grants wget permission to disobey robot scraping rules.<br>
-  <strong>-A".pdf"</strong> enables scraping of all PDF files.<br>
-</p><p>So is there some parameter to specify the directory?</p>

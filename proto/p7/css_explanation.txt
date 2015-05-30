@@ -1,5 +1,0 @@
-<p style="font-family: 'Courier New', Courier, monospace;">
-The selector <code>div#sidebar a[href^=http://www.youtube.com]</code> chooses links with URLs starting with <code>http://www.youtube.com</code> from a container with the ID <code>sidebar</code>.<br><br>
-  <code>div</code>s are HTML element for <i>containers</i> of generic content.<br>
-  <code>a</code>s are HTML <i>links</i> pointing to URLs  on the web with the <code>href</code> attribute.
-</p>

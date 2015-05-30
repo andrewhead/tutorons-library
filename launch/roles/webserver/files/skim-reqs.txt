@@ -1,6 +1,0 @@
-gunicorn
-django
-jsonpickle
-enum34
-requests
-beautifulsoup4

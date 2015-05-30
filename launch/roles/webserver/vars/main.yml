@@ -1,6 +1,0 @@
-projectdir: /usr/local/{{ appname }}
-venv: "{{ projectdir }}/venv"
-src: "{{ projectdir }}/src"
-staticdir: "{{ projectdir }}/static"
-scriptdir: "{{ projectdir }}/scripts"
-djsettings: "{{ appname }}.settings.production"

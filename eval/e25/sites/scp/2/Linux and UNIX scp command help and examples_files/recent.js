@@ -1,5 +1,0 @@
-document.getElementById("ra1").innerHTML = "<a href=\"http://www.computerhope.com/issues/ch001606.htm\">How do I make Windows programs automatically startup?</a>";
-document.getElementById("ra2").innerHTML = "<a href=\"http://www.computerhope.com/issues/ch001607.htm\">How do I update my Antivirus if my antivirus license is expiring?</a>";
-document.getElementById("ra3").innerHTML = "<a href=\"http://www.computerhope.com/issues/ch001608.htm\">How to change my printer from portrait to landscape mode?</a>";
-document.getElementById("ra4").innerHTML = "<a href=\"http://www.computerhope.com/issues/ch001609.htm\">Where is my E-mail attachment saved after it is opened?</a>";
-document.getElementById("ra5").innerHTML = "<a href=\"http://www.computerhope.com/issues/ch001610.htm\">How do I add pictures to my website?</a>";
