@@ -5,7 +5,9 @@
   "main": "main.js",
   "scripts": {
     "build": "browserify main.js --s tutorons -o dist/tutorons-library.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build-xpi": "(cd addon && cfx xpi tutorons.xpi) && mv addon/*.xpi dist/",
+    "prebuild-xpi": "npm run build && mkdir -p addon/data && cp dist/tutorons-library.js addon/data/",
+    "test-xpi": "(cd addon && cfx run)"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
   },
   "homepage": "https://github.com/andrewhead/tutorons-library",
   "devDependencies": {
-    "browserify": "^10.2.3"
+    "browserify": "^10.2.3",
+    "jpm": "^1.0.0"
   }
 }

@@ -3,6 +3,7 @@ node_modules
 
 # Build files
 dist
+npm-debug.log
 
 # Junk files
 .DS_Store
