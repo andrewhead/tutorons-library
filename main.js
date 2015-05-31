@@ -1,5 +1,7 @@
 /*jslint browser:true, continue:true */
-/*global $:false, self:false */
+
+var $ = require('jquery');
+require('jquery-ui');
 
 var SERVER_URL = 'http://tutorons.com';
 var TUTORONS = ['wget', 'css'];
@@ -242,16 +244,10 @@ function getNearestExplanation(explanations, selString) {
 
 }
 
-(function addon() {
+function addon(document) {
 
     var tooltipShowing = false;
     var enabled = true;
-
-    /* Listen for activation or deactivation of plugin */
-    self.port.on('detach', function() {
-        // console.log("Detached");
-        enabled = false;
-    });
 
     var explanations = fetchExplanations();
  
@@ -317,5 +313,8 @@ function getNearestExplanation(explanations, selString) {
 
         }
     };
+}
 
-}());
+module.exports = {
+    'fetch': addon,
+};

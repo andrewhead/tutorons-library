@@ -1,9 +1,30 @@
 {
-  "name": "tutoron-starter-pack",
-  "title": "Tutoron Starter Pack",
-  "id": "jid1-b4BhFkPD04JYkQ",
-  "description": "automatic descriptions of common programming micro-languages and command lines.",
+  "name": "tutorons-library",
+  "version": "0.1.0",
+  "description": "A web library for loading micro-explanations of online code.",
+  "main": "main.js",
+  "scripts": {
+    "build": "browserify main.js --s tutorons -o dist/tutorons-library.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andrewhead/tutorons-library.git"
+  },
+  "keywords": [
+    "code",
+    "programming",
+    "micro-explanations",
+    "tutorons",
+    "tooltip"
+  ],
   "author": "Andrew Head",
-  "license": "MPL 2.0",
-  "version": "0.1"
+  "license": "None",
+  "bugs": {
+    "url": "https://github.com/andrewhead/tutorons-library/issues"
+  },
+  "homepage": "https://github.com/andrewhead/tutorons-library",
+  "devDependencies": {
+    "browserify": "^10.2.3"
+  }
 }
