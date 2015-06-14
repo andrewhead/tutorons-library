@@ -1,35 +1,36 @@
 {
-  "name": "tutorons-library",
-  "version": "0.1.0",
-  "description": "A web library for loading micro-explanations of online code.",
-  "main": "main.js",
-  "scripts": {
-    "build": "browserify main.js --s tutorons -o dist/tutorons-library.js",
-    "dist": "scp dist/tutorons-library.js ubuntu@tutorons.com:/var/www/tutorons/",
-    "predist": "npm run build",
-    "build-xpi": "(cd addon && cfx xpi tutorons.xpi) && mv addon/*.xpi dist/",
-    "prebuild-xpi": "npm run build && mkdir -p addon/data && cp dist/tutorons-library.js addon/data/",
-    "test-xpi": "(cd addon && cfx run)"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/andrewhead/tutorons-library.git"
-  },
-  "keywords": [
-    "code",
-    "programming",
-    "micro-explanations",
-    "tutorons",
-    "tooltip"
-  ],
-  "author": "Andrew Head",
-  "license": "None",
-  "bugs": {
-    "url": "https://github.com/andrewhead/tutorons-library/issues"
-  },
-  "homepage": "https://github.com/andrewhead/tutorons-library",
-  "devDependencies": {
-    "browserify": "^10.2.3",
-    "jpm": "^1.0.0"
-  }
+    "license": "None", 
+    "name": "tutorons-library", 
+    "repository": {
+        "url": "https://github.com/andrewhead/tutorons-library.git", 
+        "type": "git"
+    }, 
+    "author": "Andrew Head", 
+    "bugs": {
+        "url": "https://github.com/andrewhead/tutorons-library/issues"
+    }, 
+    "version": "0.1.0", 
+    "scripts": {
+        "dist": "scp dist/tutorons-library.js ubuntu@tutorons.com:/var/www/tutorons/", 
+        "prebuild-xpi": "npm run build && mkdir -p addon/data && cp dist/tutorons-library.js addon/data/", 
+        "build": "browserify main.js --s tutorons -o dist/tutorons-library.js", 
+        "build-xpi": "(cd addon && cfx xpi tutorons.xpi) && mv addon/*.xpi dist/", 
+        "predist": "npm run build", 
+        "test-xpi": "(cd addon && cfx run)"
+    }, 
+    "keywords": [
+        "code", 
+        "programming", 
+        "micro-explanations", 
+        "tutorons", 
+        "tooltip"
+    ], 
+    "devDependencies": {
+        "jpm": "^1.0.0", 
+        "browserify": "^10.2.3"
+    }, 
+    "main": "main.js", 
+    "homepage": "https://github.com/andrewhead/tutorons-library", 
+    "id": "jid1-I0dZCbgWATj1mQ", 
+    "description": "A web library for loading micro-explanations of online code."
 }
