@@ -209,7 +209,10 @@ function fetchExplanations() {
         explanations[tutName] = {};
         $.post(
             SERVER_URL + '/' + tutName,
-            document.body.innerHTML,
+            {
+                'origin': window.location.href,
+                'document': document.body.innerHTML,
+            },
             saveExplanation
         );
     }
