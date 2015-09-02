@@ -3,14 +3,24 @@
 var $ = require('jquery');
 require('jquery-ui');
 
-var SERVER_URL = 'http://tutorons.com';
-var TUTORONS = ['wget', 'css'];
-var TOOLTIP_WIDTH = 600;
 var explanations = {};
 var enabled = true;
 
+var SERVER_URL = 'http://127.0.0.1:8002';
+// var SERVER_URL = 'http://tutorons.com';
+var SELECTION_EXPLANATION_ENDPOINT = SERVER_URL + '/explain';
+var TUTORONS = ['wget', 'css', 'regex'];
+var COLORS = {
+    'wget': '#d99eff',
+    'css': '#ffbbbb',
+    'regex': '#cceeaa',
+};
 
-function clearSelection() {
+var TOOLTIP_WIDTH = 600;
+var HL_CLASS = 'tutorons-highlight';
+
+
+function clearSelection () {
 
     if (window.getSelection) {
         window.getSelection().removeAllRanges();
@@ -22,7 +32,7 @@ function clearSelection() {
 }
 
 
-function styleTooltip(div) {
+function styleTooltip (div) {
 
     $(div).css({
         width: String(TOOLTIP_WIDTH) + 'px',
@@ -67,7 +77,7 @@ function styleTooltip(div) {
 }
 
 
-function showTooltip(node) {
+function showTooltip (node) {
 
     var explanation = explanations[node.textContent];
     if (enabled === false || explanation === undefined) {
@@ -102,7 +112,7 @@ function showTooltip(node) {
     });
 
     // Hide tooltip when click happens outside it
-    var hide = function(event) {
+    var hide = function (event) {
         if (!$(event.target).closest('#hint-tooltip').length) {
             $(div).css('display', 'none');
             $(document.body).unbind('mousedown', hide);
@@ -117,57 +127,59 @@ function showTooltip(node) {
 }
 
 
-function highlight(patterns) {
-  
-    var HL_CLASS = 'tutorons-highlight';
-    var origX = window.scrollX, origY = window.scrollY;
+function isHighlighted (range) {
+    var ancestors = $(range.startContainer).parents();
+    var hlAncestors = ancestors.filter('.' + HL_CLASS);
+    return (hlAncestors.length > 0);
+}
 
-    function isHighlighted(range) {
-        var ancestors = $(range.startContainer).parents();
-        var hlAncestors = ancestors.filter('.' + HL_CLASS);
-        return (hlAncestors.length > 0);
+
+function highlightRange (range, color, showNow) {
+
+    if (isHighlighted(range)) {
+        return;
     }
 
-    function highlightPattern(pattern) {
+    // Transfer found terms into a span
+    var contents = range.extractContents();
+    var span = document.createElement('span');
+    span.appendChild(contents);
+    range.insertNode(span);
+      
+    // Add explanation and click handler to show explanation in tooltip
+    span.onclick = function () {
+        showTooltip(span);
+    };
+
+    // Smoothly fade in the highlighting
+    $(span).fadeOut('fast', function () {
+        $(this).fadeIn('slow', function () {
+            if (showNow === true) {
+                showTooltip(span);
+            }
+        });
+        $(this).addClass(HL_CLASS);
+        $(this).css('background-color', color);
+    });
+
+}
+
+
+function highlight (patterns, color) {
+  
+    var origX = window.scrollX, origY = window.scrollY;
+    var selection, range;
+
+    function highlightPattern (pattern) {
 
         // Reset selection
-        var selection = window.getSelection();
+        selection = window.getSelection();
         selection.collapse(document.body, 0);
 
-        // Find everywhere where the pattern occurs in the document
-        var range, contents, span;
-        var fadeIn = function() {
-            $(this).fadeIn('slow');
-            $(this).addClass(HL_CLASS);
-            $(this).css('background-color', '#d99eff');
-        };
-
-        var clickhandler = function(node) {
-            return function() {
-                showTooltip(node);
-            };
-        };
-
         while (window.find(pattern)) {
-          
-          // Make sure this hasn't already been highlighted
-          selection = window.getSelection();
-          range = selection.getRangeAt(0);
-          if (isHighlighted(range)) {
-              continue;
-          }
-
-          // Transfer found terms into a span
-          contents = range.extractContents();
-          span = document.createElement('span');
-          span.appendChild(contents);
-          range.insertNode(span);
-          
-          // Add explanation and click handler to show explanation in tooltip
-          span.onclick = clickhandler(span);
-
-          // Smoothly fade in the highlighting
-          $(span).fadeOut('fast', fadeIn);
+            selection = window.getSelection();
+            range = selection.getRangeAt(0);
+            highlightRange(range, color);
         }
 
         selection.collapse(document.body, 0);
@@ -175,13 +187,12 @@ function highlight(patterns) {
     }
 
     // Sort patterns from longest to shortest
-    patterns.sort(function(a, b) { 
+    patterns.sort(function (a, b) { 
       return b.length - a.length; 
     });
-    var i;
-    for (i = 0; i < patterns.length; i++) {
-      highlightPattern(patterns[i]);
-    }
+    patterns.forEach(function (patt) {
+        highlightPattern(patt);
+    });
 
     // As the 'find' and 'select' methods may change the user's location on
     // the page, we scroll the page back to its original location here.
@@ -190,18 +201,20 @@ function highlight(patterns) {
 }
 
 
-function fetchExplanations() {
+function fetchExplanations () {
 
-    var saveExplanation = function(resp) {
-        var tutExplanations = JSON.parse(resp);
-        highlight(Object.keys(tutExplanations));
-        var code;
-        for (code in tutExplanations) {
-            if (tutExplanations.hasOwnProperty(code)) {
-                explanations[code] = tutExplanations[code];
+    function addExplanation (tutoron) {
+        return function (resp) {
+            var tutExplanations = JSON.parse(resp);
+            highlight(Object.keys(tutExplanations), COLORS[tutoron]);
+            var code;
+            for (code in tutExplanations) {
+                if (tutExplanations.hasOwnProperty(code)) {
+                    explanations[code] = tutExplanations[code];
+                }
             }
-        }
-    };
+        };
+    }
 
     var i, tutName;
     for (i = 0; i < TUTORONS.length; i++) {
@@ -213,17 +226,38 @@ function fetchExplanations() {
                 'origin': window.location.href,
                 'document': document.body.innerHTML,
             },
-            saveExplanation
+            addExplanation(tutName)
         );
     }
     return explanations;
 
 }
 
-function addon() {
+
+function explainCurrentSelection (tutoron) {
+    var selection = window.getSelection();
+    var range = selection.getRangeAt(0);
+    var code = selection.toString();
+    $.post(
+        SELECTION_EXPLANATION_ENDPOINT + '/' + tutoron,
+        {
+            'origin': window.location.href,
+            'text': code
+        },
+        function (html) {
+            highlightRange(range, COLORS[tutoron], true);
+            explanations[code] = html;
+        }
+    );
+}
+
+
+function addon () {
     fetchExplanations();
 }
 
+
 module.exports = {
     'fetch': addon,
+    'explainCurrentSelection': explainCurrentSelection,
 };
