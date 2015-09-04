@@ -15,6 +15,7 @@ var COLORS = {
     'css': '#ffbbbb',
     'regex': '#cceeaa',
 };
+var CONTEXT_TUTORONS = ['css'];
 
 var TOOLTIP_WIDTH = 600;
 var HL_CLASS = 'tutorons-highlight';
@@ -234,21 +235,107 @@ function fetchExplanations () {
 }
 
 
-function explainCurrentSelection (tutoron) {
-    var selection = window.getSelection();
+/* Find the first node that holds the full range */
+function getEncapsulatingNode(range) {
+
+    var sCont = range.startContainer;
+    var eCont = range.endContainer;
+    var startParents = [sCont].concat($(sCont).parents().toArray());
+    var endParents = [eCont].concat($(eCont).parents().toArray());
+
+    var i, j, sNode, eNode;
+    for (i = 0; i < startParents.length; i++) {
+        for (j = 0; j < endParents.length; j++) {
+            sNode = startParents[i];
+            eNode = endParents[j];
+            if (sNode === eNode && sNode.nodeType === 1 && eNode.nodeType === 1) {
+                return sNode;
+            }
+        }
+    }
+
+    return null;
+
+}
+
+
+/**
+ * Get offsets of a range within an element
+ * REUSE: Based on code concept found at:
+ * http://stackoverflow.com/questions/4811822/get-a-ranges-start-and-end-offsets-relative-to-its-parent-container#4812022
+ */
+function offsetsWithinElement(node, range) {
+
+    var beforeRange, afterRange, nodeLength, sOffset, eOffset;
+
+    beforeRange = range.cloneRange();
+    beforeRange.selectNodeContents(node);
+    beforeRange.setEnd(range.startContainer, range.startOffset);
+    sOffset = beforeRange.toString().length;
+
+    afterRange = range.cloneRange();
+    afterRange.selectNodeContents(node);
+    nodeLength = afterRange.toString().length;
+    afterRange.setStart(range.endContainer, range.endOffset);
+    eOffset = nodeLength - afterRange.toString().length;
+
+    return {
+        'start': sOffset,
+        'end': eOffset,
+    };
+
+}
+
+
+function getContext(selection, edge_size) {
+
     var range = selection.getRangeAt(0);
-    var code = selection.toString();
+    var node = getEncapsulatingNode(range);
+    var parents = [node].concat($(node).parents().toArray());
+    var i, par, offsets, start_char, end_char;
+    for (i = 0; i < parents.length; i++) {
+        par = parents[i];
+        offsets = offsetsWithinElement(par, range);
+        start_char = offsets.start;
+        end_char = offsets.end - 1;
+        if (start_char >= edge_size && end_char < par.textContent.length - edge_size) {
+            return par.textContent.substring(start_char - edge_size, end_char + edge_size + 1);
+        }
+    }
+    return null;
+
+}
+
+function explainCurrentSelection (tutoron) {
+
+    var DEFAULT_CONTEXT_SIZE = 3;
+    var contextSize = 0;
+    var queryText;
+
+    var selection = window.getSelection();
+    var selectedText = selection.toString();
+    var context = getContext(selection, DEFAULT_CONTEXT_SIZE);
+    if (CONTEXT_TUTORONS.indexOf(tutoron) !== -1 && context !== null) {
+        queryText = context;
+        contextSize = DEFAULT_CONTEXT_SIZE;
+    } else {
+        queryText = selectedText;
+    }
+
+    var range = selection.getRangeAt(0);
     $.post(
         SELECTION_EXPLANATION_ENDPOINT + '/' + tutoron,
         {
             'origin': window.location.href,
-            'text': code
+            'text': queryText,
+            'edge_size': contextSize,
         },
         function (html) {
+            explanations[selectedText] = html;
             highlightRange(range, COLORS[tutoron], true);
-            explanations[code] = html;
         }
     );
+
 }
 
 
