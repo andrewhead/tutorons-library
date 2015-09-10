@@ -8,7 +8,12 @@ var enabled = true;
 
 var SERVER_URL = 'http://127.0.0.1:8002';
 // var SERVER_URL = 'http://tutorons.com';
-var SELECTION_EXPLANATION_ENDPOINT = SERVER_URL + '/explain';
+function getScanUrl (tutoron) {
+    return SERVER_URL + '/' + tutoron + '/scan';
+}
+function getExplainUrl (tutoron) {
+    return SERVER_URL + '/' + tutoron + '/explain';
+}
 var TUTORONS = ['wget', 'css', 'regex'];
 var COLORS = {
     'wget': '#d99eff',
@@ -80,7 +85,7 @@ function styleTooltip (div) {
 
 function showTooltip (node) {
 
-    var explanation = explanations[node.textContent];
+    var explanation = $(node).data('explanation');
     if (enabled === false || explanation === undefined) {
         return;
     }
@@ -135,7 +140,7 @@ function isHighlighted (range) {
 }
 
 
-function highlightRange (range, color, showNow) {
+function markRange (range, explanation, color, showNow) {
 
     if (isHighlighted(range)) {
         return;
@@ -152,6 +157,8 @@ function highlightRange (range, color, showNow) {
         showTooltip(span);
     };
 
+    $(span).data('explanation', explanation);
+
     // Smoothly fade in the highlighting
     $(span).fadeOut('fast', function () {
         $(this).fadeIn('slow', function () {
@@ -166,39 +173,70 @@ function highlightRange (range, color, showNow) {
 }
 
 
-function highlight (patterns, color) {
-  
-    var origX = window.scrollX, origY = window.scrollY;
-    var selection, range;
+/**
+ * Given a list of text nodes that are descendants of a node and the
+ * character offsets in that node, return the text nodes at the start
+ * and end and the character offsets within those nodes.
+ */
+function getRangeInText(textNodeList, startOffset, endOffset) {
 
-    function highlightPattern (pattern) {
+    var currentOffset = 0;
+    var nodeStartOffset, nodeEndOffset;
+    var startNode, endNode;
+    var foundStart = false, foundEnd = false;
 
-        // Reset selection
-        selection = window.getSelection();
-        selection.collapse(document.body, 0);
-
-        while (window.find(pattern)) {
-            selection = window.getSelection();
-            range = selection.getRangeAt(0);
-            highlightRange(range, color);
+    textNodeList.some(function (node) {
+        var textLength = node.textContent.length;
+        if (startOffset >= currentOffset && 
+            startOffset < currentOffset + textLength) {
+            foundStart = true;
+            startNode = node;
+            nodeStartOffset = startOffset - currentOffset;
         }
+        if (endOffset >= currentOffset &&
+            endOffset < currentOffset + textLength) {
+            foundEnd = true;
+            endNode = node;
+            nodeEndOffset = endOffset - currentOffset;
+        }
+        currentOffset += textLength;
+        return foundStart && foundEnd;
+    });
 
-        selection.collapse(document.body, 0);
+    return {
+        'start': {
+            'node': startNode,
+            'offset': nodeStartOffset
+        },
+        'end': {
+            'node': endNode,
+            'offset': nodeEndOffset
+        }
+    };
 
+}
+
+
+/**
+ * Get an ordered list of all text nodes within a node
+ */
+function getTextDescendants (node) {
+    var descendants = [];
+    var i, j;
+    var child;
+    var childDescendants;
+    if (node.nodeName === '#text') {
+        descendants.push(node);
+    } else {
+        for (i = 0; i < node.childNodes.length; i++) {
+            child = node.childNodes[i];
+            childDescendants = getTextDescendants(child);
+            for (j = 0; j < childDescendants.length; j++) {
+                descendants.push(childDescendants[j]);
+            }
+        }
     }
-
-    // Sort patterns from longest to shortest
-    patterns.sort(function (a, b) { 
-      return b.length - a.length; 
-    });
-    patterns.forEach(function (patt) {
-        highlightPattern(patt);
-    });
-
-    // As the 'find' and 'select' methods may change the user's location on
-    // the page, we scroll the page back to its original location here.
-    window.scrollTo(origX, origY);
-
+    return descendants;
 }
 
 
@@ -206,14 +244,16 @@ function fetchExplanations () {
 
     function addExplanation (tutoron) {
         return function (resp) {
-            var tutExplanations = JSON.parse(resp);
-            highlight(Object.keys(tutExplanations), COLORS[tutoron]);
-            var code;
-            for (code in tutExplanations) {
-                if (tutExplanations.hasOwnProperty(code)) {
-                    explanations[code] = tutExplanations[code];
-                }
-            }
+            var regions = JSON.parse(resp);
+            regions.forEach(function (r) {
+                var range = document.createRange();
+                var node = document.querySelector(r.node);
+                var textNodes = getTextDescendants(node);
+                var textRanges = getRangeInText(textNodes, r.start_index, r.end_index + 1);
+                range.setStart(textRanges.start.node, textRanges.start.offset);
+                range.setEnd(textRanges.end.node, textRanges.end.offset);
+                markRange(range, r.document, COLORS[tutoron]);
+            });
         };
     }
 
@@ -222,7 +262,7 @@ function fetchExplanations () {
         tutName = TUTORONS[i];
         explanations[tutName] = {};
         $.post(
-            SERVER_URL + '/' + tutName,
+            getScanUrl(tutName),
             {
                 'origin': window.location.href,
                 'document': document.body.innerHTML,
@@ -324,15 +364,15 @@ function explainCurrentSelection (tutoron) {
 
     var range = selection.getRangeAt(0);
     $.post(
-        SELECTION_EXPLANATION_ENDPOINT + '/' + tutoron,
+        getExplainUrl(tutoron),
         {
             'origin': window.location.href,
             'text': queryText,
             'edge_size': contextSize,
         },
         function (html) {
-            explanations[selectedText] = html;
-            highlightRange(range, COLORS[tutoron], true);
+            // explanations[selectedText] = html;
+            markRange(range, html, COLORS[tutoron], true);
         }
     );
 
