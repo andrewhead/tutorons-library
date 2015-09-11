@@ -2,14 +2,18 @@
     <head>
     <meta charset="utf-8" />
         <title>Index</title>
-        <!--
         <script src="dist/tutorons-library.js"></script>
         <script>
             document.addEventListener("DOMContentLoaded", function(event) {
-                tutorons.fetch(document);
+                var tutoronsConnection = new tutorons.TutoronsConnection(window, {
+                    'endpoints': {
+                        'wget': 'http://127.0.0.1:8002/wget',
+                        'regex': 'http://127.0.0.1:8002/regex',
+                        'css': 'http://127.0.0.1:8002/css',
+                    }});
+                tutoronsConnection.scanDom();
             });
         </script>
-        -->
     </head>
     <body>
         <div style='width: 30%; margin: 0px auto; margin-top: 100px; font-size: 20px; line-height: 1.2em;'>

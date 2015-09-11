@@ -1,5 +1,10 @@
 /*jslint browser: true*/
 /*global document, tutorons, self*/
 
-tutorons.fetch(document);
-self.port.on('explain-selector', tutorons.explainCurrentSelection);
+var tutoronsConnection = new tutorons.TutoronsConnection(window);
+tutoronsConnection.scanDom();
+
+self.port.on('explain-selector', function (tutoron) {
+    var selection = window.getSelection();
+    tutoronsConnection.explainSelection(tutoron, selection);
+});
