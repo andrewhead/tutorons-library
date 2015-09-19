@@ -37,7 +37,7 @@ HtmlWalker.prototype.getRangeInText = function (textNodeList, startOffset, endOf
             nodeStartOffset = startOffset - currentOffset;
         }
         if (endOffset >= currentOffset &&
-            endOffset < currentOffset + textLength) {
+            endOffset <= currentOffset + textLength) {
             foundEnd = true;
             endNode = node;
             nodeEndOffset = endOffset - currentOffset;
