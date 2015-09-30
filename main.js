@@ -155,10 +155,6 @@ TutoronsConnection.prototype.showTooltip = function (node) {
     var divY = selRect.bottom + this.window.pageYOffset + 10;
     divX = Math.max(this.window.pageXOffset, divX);
     divX = Math.min(divX, this.window.pageXOffset + this.window.innerWidth - this.TOOLTIP_WIDTH);
-    $(div).css({
-        left: String(divX) + 'px',
-        top: String(divY) + 'px',
-    });
 
     // Hide tooltip when click happens outside it
     var parent = this;
@@ -170,6 +166,15 @@ TutoronsConnection.prototype.showTooltip = function (node) {
         }
     };
     $(this.window.document.body).bind('mousedown', hide);
+
+    // XXX: we set the right anchor here instead of left because after we set
+    // all CSS properties to initial, we observe that the position is reluctant
+    // to update by setting the 'left' property.
+    $(div).css({
+        right: String(this.window.innerWidth - (this.TOOLTIP_WIDTH + divX)) + 'px',
+        top: String(divY) + 'px',
+        position: 'absolute',
+    });
 
     // Fade in the tooltip
     $(div).show('scale', {}, 200);
@@ -190,11 +195,20 @@ TutoronsConnection.prototype.getColor = function (tutoron) {
 };
 
 TutoronsConnection.prototype.styleTooltip = function (div) {
+
+    // Initialize the format of all formatted elements
     $(div).css({
-        width: String(this.TOOLTIP_WIDTH) + 'px',
-        position: 'absolute',
-        border: 'gray 2px dashed',
-        display: 'none',
+        'all': 'initial',
+    });
+    $(div).find('p, ul, h5, div.example-code, .tutoron-selection, .wget-opt').css({
+        'all': 'initial',
+    });
+
+    // Apply formatting to elements
+    $(div).css({
+        'width': String(this.TOOLTIP_WIDTH) + 'px',
+        'border': 'gray 2px dashed',
+        'display': 'none',
         'padding-top': '10px',
         'background-color': 'white',
         'padding': '20px',
@@ -202,17 +216,24 @@ TutoronsConnection.prototype.styleTooltip = function (div) {
         'font-size': '14px',
     });
     $(div).find('p, ul, h5').css({
+        'display': 'block',
         'margin-top': '0',
         'margin-bottom': '.4em',
+        'font-family': '"Palatino Linotype", "Book Antiqua", Palatino, serif',
         'line-height': '1.3em',
+    });
+    $(div).find('p').css({
+        'font-size': '14px',
     });
     $(div).find('ul').css({
         'padding-left': '20px',
     });
     $(div).find('h5').css({
         'font-size': '14px',
+        'font-weight': 'bold',
     });
     $(div).find('div.example-code').css({
+        'display': 'block',
         'margin-top': '10px',
         'padding': '10px',
         'font-size': '14px',
@@ -229,6 +250,7 @@ TutoronsConnection.prototype.styleTooltip = function (div) {
     $(div).find('.wget-opt').css({
         'font-family': '"Courier New", Courier, monospace',
     });
+
 };
 
 TutoronsConnection.prototype.isHighlighted = function (range) {
