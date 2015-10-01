@@ -7,8 +7,8 @@ require('jquery-ui');
 
 var TutoronsConnection = function(window, options) {
 
-    this.TOOLTIP_WIDTH = 600;
     this.HL_CLASS = 'tutorons-highlight';
+    this.TOOLTIP_PADDING_SIDES = 20;
 
     this.options = {
          'endpoints': {
@@ -126,6 +126,28 @@ TutoronsConnection.prototype.markRange = function (range, explanation, color, sh
 
 };
 
+TutoronsConnection.prototype.getTooltipWidth = function (node) {
+
+    var TOOLTIP_MIN_WIDTH = 600;
+    var TOOLTIP_PADDING_SIDES = this.TOOLTIP_PADDING_SIDES;
+    var tooltipWidth = TOOLTIP_MIN_WIDTH;
+
+    function widthWithPadding(node) {
+        return Number($(node).attr('width')) + TOOLTIP_PADDING_SIDES * 2;
+    }
+
+    // We approximate an appropriate width for the tooltip as the width of
+    // its largest internal descendant, plus padding
+    $(node).find('*').each(function() {
+        if (widthWithPadding(this) > tooltipWidth) {
+            tooltipWidth = widthWithPadding(this);
+        }
+    });
+
+    return tooltipWidth;
+
+};
+
 TutoronsConnection.prototype.showTooltip = function (node) {
 
     var explanation = $(node).data('explanation');
@@ -151,10 +173,12 @@ TutoronsConnection.prototype.showTooltip = function (node) {
     // Center tooltip beneath text.  Doesn't work in IE9.
     var selRect = node.getBoundingClientRect();
     var selMidX = this.window.pageXOffset + selRect.left + selRect.width / 2;
-    var divX = selMidX - this.TOOLTIP_WIDTH / 2;
+    var tooltipWidth = this.getTooltipWidth(div);
+    var bodyWidth = $(this.window.document.body).width();
+    var divX = selMidX - tooltipWidth / 2;
     var divY = selRect.bottom + this.window.pageYOffset + 10;
     divX = Math.max(this.window.pageXOffset, divX);
-    divX = Math.min(divX, this.window.pageXOffset + this.window.innerWidth - this.TOOLTIP_WIDTH);
+    divX = Math.min(divX, this.window.pageXOffset + bodyWidth - tooltipWidth);
 
     // Hide tooltip when click happens outside it
     var parent = this;
@@ -167,13 +191,15 @@ TutoronsConnection.prototype.showTooltip = function (node) {
     };
     $(this.window.document.body).bind('mousedown', hide);
 
-    // XXX: we set the right anchor here instead of left because after we set
-    // all CSS properties to initial, we observe that the position is reluctant
-    // to update by setting the 'left' property.
+    // XXX: when tested in Firefox, it was necessary to explicitly set to CSS property
+    // for 'left' to the empty string '' before setting it to a new value for the page
+    // to reflect the intended position.  This only appears to be a problem when 'all'
+    // CSS properties for the 'div' are set to 'initial' before setting the value of 'left'.
+    $(div).css('left', '');
     $(div).css({
-        right: String(this.window.innerWidth - (this.TOOLTIP_WIDTH + divX)) + 'px',
-        top: String(divY) + 'px',
         position: 'absolute',
+        left: String(divX) + 'px',
+        top: String(divY) + 'px',
     });
 
     // Fade in the tooltip
@@ -206,12 +232,12 @@ TutoronsConnection.prototype.styleTooltip = function (div) {
 
     // Apply formatting to elements
     $(div).css({
-        'width': String(this.TOOLTIP_WIDTH) + 'px',
+        'width': String(this.getTooltipWidth(div)) + 'px',
         'border': 'gray 2px dashed',
         'display': 'none',
         'padding-top': '10px',
         'background-color': 'white',
-        'padding': '20px',
+        'padding': String(this.TOOLTIP_PADDING_SIDES) + 'px',
         'font-family': '"Palatino Linotype", "Book Antiqua", Palatino, serif',
         'font-size': '14px',
     });
