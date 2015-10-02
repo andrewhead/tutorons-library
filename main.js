@@ -246,16 +246,13 @@ TutoronsConnection.prototype.styleTooltip = function (div) {
         'margin-top': '0',
         'margin-bottom': '.4em',
         'font-family': '"Palatino Linotype", "Book Antiqua", Palatino, serif',
-        'line-height': '1.3em',
-    });
-    $(div).find('p').css({
         'font-size': '14px',
+        'line-height': '1.3em',
     });
     $(div).find('ul').css({
         'padding-left': '20px',
     });
     $(div).find('h5').css({
-        'font-size': '14px',
         'font-weight': 'bold',
     });
     $(div).find('div.example-code').css({
