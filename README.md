@@ -4,7 +4,7 @@ Web library for querying tutorons for micro-explanations of code found online.
 
 ## Working with a local Tutorons development server
 
-To set the addon to look to your local Tutorons server, replace the line:
+To set the addon to look to your local Tutorons server, replace the following line in the `addon/data/load-tutorons.js` file:
 
     var tutoronsConnection = new tutorons.TutoronsConnection(window);
 
