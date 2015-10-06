@@ -1,5 +1,11 @@
 Web library for querying tutorons for micro-explanations of code found online.
 
+# Setting up the development environment
+
+From the main directory, run:
+
+    npm install
+
 # Running the addon
 
 ## Working with a local Tutorons development server
@@ -20,7 +26,7 @@ with the lines:
 
 ## Running the addon
 
-    npm run build-xpi && npm run text-xpi
+    npm run build-xpi && npm run test-xpi
 
 ## Deploying to a running (not test) browser
 

@@ -4,7 +4,7 @@
     "author": "Andrew Head", 
     "title": "TutQuery", 
     "version": "0.1.0", 
-    "id": "jid1-WBkjNjaB4qiEjg@jetpack", 
+    "id": "tutquery@com.headstrong", 
     "main": "lib/main.js",
     "name": "tutquery"
 }
