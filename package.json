@@ -12,7 +12,7 @@
   "version": "0.1.0",
   "scripts": {
     "dist": "scp dist/tutorons-library.js ubuntu@tutorons.com:/var/www/tutorons/",
-    "prebuild-xpi": "npm run build && mkdir -p addon/data && cp dist/tutorons-library.js addon/data/",
+    "prebuild-xpi": "mkdir dist && npm run build && mkdir -p addon/data && cp dist/tutorons-library.js addon/data/",
     "build": "browserify main.js --s tutorons -o dist/tutorons-library.js",
     "build-xpi": "(cd addon && cfx xpi tutorons.xpi) && mv addon/*.xpi dist/",
     "predist": "npm run build",
@@ -33,5 +33,10 @@
   "main": "main.js",
   "homepage": "https://github.com/andrewhead/tutorons-library",
   "id": "jid1-I0dZCbgWATj1mQ",
-  "description": "A web library for loading micro-explanations of online code."
+  "description": "A web library for loading micro-explanations of online code.",
+  "dependencies": {
+    "jquery": "^2.1.4",
+    "jquery-ui": "^1.10.5",
+    "lodash": "^3.10.1"
+  }
 }
