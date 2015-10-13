@@ -11,12 +11,13 @@
   },
   "version": "0.1.0",
   "scripts": {
+    "build": "browserify main.js --s tutorons -o dist/tutorons-library.js",
+    "predist": "npm run build",
     "dist": "scp dist/tutorons-library.js ubuntu@tutorons.com:/var/www/tutorons/",
     "prebuild-xpi": "mkdir -p dist && npm run build && mkdir -p addon/data && cp dist/tutorons-library.js addon/data/",
-    "build": "browserify main.js --s tutorons -o dist/tutorons-library.js",
     "build-xpi": "(cd addon && jpm xpi tutorons.xpi) && mv addon/*.xpi dist/",
-    "predist": "npm run build",
-    "test-xpi": "(cd addon && jpm run)"
+    "test-xpi": "(cd addon && jpm run)",
+    "dist-xpi": "scp dist/*.xpi ubuntu@tutorons.com:/var/www/tutorons/"
   },
   "keywords": [
     "code",
