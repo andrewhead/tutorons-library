@@ -15,8 +15,9 @@ var TutoronsConnection = function(window, options) {
             'wget': 'http://www.tutorons.com/wget',
             'regex': 'http://www.tutorons.com/regex',
             'css': 'http://www.tutorons.com/css',
+            'python': 'http://www.tutorons.com/python',
         },
-        'colors': ['#d99eff', '#ffbbbb', '#cceeaa'],
+        'colors': ['#d99eff', '#ffbbbb', '#cceeaa', '#fff4cc'],
         'contextTutorons': ['css'],
     };
     this.options = _.assign(this.options, options);
