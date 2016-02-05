@@ -83,5 +83,6 @@ cm.Menu({
         cm.Item({ label: "Explain as wget", data: "wget" }),
         cm.Item({ label: "Explain as CSS selector", data: "css" }),
         cm.Item({ label: "Explain as regular expression", data: "regex" }),
+        cm.Item({ label: "Explain as Python built-in", data: "python" }),
     ]
 });
