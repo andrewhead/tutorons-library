@@ -12,10 +12,10 @@ var TutoronsConnection = function(window, options) {
 
     this.options = {
          'endpoints': {
-            'wget': 'http://www.tutorons.com/wget',
-            'regex': 'http://www.tutorons.com/regex',
-            'css': 'http://www.tutorons.com/css',
-            'python': 'http://www.tutorons.com/python',
+            'wget': 'http://127.0.0.1:8002/wget',
+            'regex': 'http://127.0.0.1:8002/regex',
+            'css': 'http://127.0.0.1:8002/css',
+            'python': 'http://127.0.0.1:8002/python',
         },
         'colors': ['#d99eff', '#ffbbbb', '#cceeaa', '#fff4cc'],
         'contextTutorons': ['css'],
@@ -37,7 +37,7 @@ TutoronsConnection.prototype.addRegions = function (tutoron, regions) {
         var textRanges = parent.htmlWalker.getRangeInText(textNodes, r.start_index, r.end_index + 1);
         range.setStart(textRanges.start.node, textRanges.start.offset);
         range.setEnd(textRanges.end.node, textRanges.end.offset);
-        parent.markRange(range, r.document, parent.getColor(tutoron));
+        parent.markRange(range, r.document, parent.getColor(tutoron), false, r.region_id, r.query_id);
     });
 };
 
@@ -45,8 +45,24 @@ TutoronsConnection.prototype.scanDom = function () {
 
     function addExplanation (tutoronsConn, tutoron) {
         return function (resp) {
-            var regions = JSON.parse(resp);
+            var response = JSON.parse(resp);
+            var regions = response['explained_regions']
+            var url = response['url'];
+            var start_time = response['client_start_time'];
+            var sq_id = '/api/v1/server_query/' + response['sq_id'] + '/';
             tutoronsConn.addRegions(tutoron, regions);
+            var data = JSON.stringify({ "end_time": Date(),
+                                        "start_time": start_time,
+                                        "server_query": sq_id,
+                                    });
+            $.ajax({
+              url: url,
+              type: 'POST',
+              contentType: 'application/json',
+              data: data,
+              dataType: 'json',
+              processData: false
+            })
          };
     }
 
@@ -58,6 +74,7 @@ TutoronsConnection.prototype.scanDom = function () {
             $.post(endpoint + '/scan', {
                     'origin': this.window.location.href,
                     'document': this.window.document.body.innerHTML,
+                    'client_start_time' : Date(),
                 }, addExplanation(this, tutoron)
             );
         }
@@ -79,21 +96,26 @@ TutoronsConnection.prototype.explainSelection = function (tutoron, selection) {
     } else {
         queryText = selectedText;
     }
-
     var range = selection.getRangeAt(0);
     var parent = this;
     $.post(this.options.endpoints[tutoron] + '/explain', { 
             'origin': this.window.location.href,
             'text': queryText,
             'edge_size': contextSize,
-        }, function (html) {
-            parent.markRange(range, html, parent.getColor(tutoron), true);
+        }, function (resp) {
+            var response = JSON.parse(resp);
+            if(response['error']){
+                parent.markRange(range, response['html'], parent.getColor(tutoron), true, 0,0);
+            } else{
+                var region = response['explained_region']
+                parent.markRange(range, region.document, parent.getColor(tutoron), true, region.region_id, region.query_id);
+            }
         }
     );
 
 };
 
-TutoronsConnection.prototype.markRange = function (range, explanation, color, showNow) {
+TutoronsConnection.prototype.markRange = function (range, explanation, color, showNow, region_id, query_id) {
 
     if (this.isHighlighted(range)) {
         return;
@@ -113,7 +135,8 @@ TutoronsConnection.prototype.markRange = function (range, explanation, color, sh
     };
 
     $(span).data('explanation', explanation);
-
+    $(span).data('region_id', region_id);
+    $(span).data('query_id', query_id);
     // Smoothly fade in the highlighting
     $(span).fadeOut('fast', function () {
         $(this).fadeIn('slow', function () {
@@ -150,8 +173,11 @@ TutoronsConnection.prototype.getTooltipWidth = function (node) {
 };
 
 TutoronsConnection.prototype.showTooltip = function (node) {
-
+    var start_time = Date();
     var explanation = $(node).data('explanation');
+    var region_id = $(node).data('region_id');
+    var sq_id = $(node).data('query_id');
+
     if (this.enabled === false || explanation === undefined) {
         return;
     }
@@ -184,11 +210,36 @@ TutoronsConnection.prototype.showTooltip = function (node) {
     // Hide tooltip when click happens outside it
     var parent = this;
     var hide = function (event) {
+        var end_time = Date();
         if (!$(event.target).closest('#hint-tooltip').length) {
             $(div).css('display', 'none');
             $(parent.window.document.body).unbind('mousedown', hide);
             parent.htmlWalker.clearSelection();
         }
+
+        var data = JSON.stringify({ "start_time": start_time,
+                                    "end_time": end_time,
+                                    });
+        $.ajax({
+          url: 'http://localhost:8002/api/v1/region/' + region_id + '/',
+          type: 'PATCH',
+          contentType: 'application/json',
+          data: data,
+          dataType: 'json',
+          processData: false
+        })   
+        var data = JSON.stringify({ "region": '/api/v1/region/' +  region_id + '/',
+                                    "server_query": '/api/v1/server_query/' + sq_id + '/',
+                                    });
+
+        $.ajax({
+          url: 'http://localhost:8002/api/v1/viewed_region/',
+          type: 'POST',
+          contentType: 'application/json',
+          data: data,
+          dataType: 'json',
+          processData: false
+        })
     };
     $(this.window.document.body).bind('mousedown', hide);
 
