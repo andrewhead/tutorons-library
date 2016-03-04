@@ -178,6 +178,19 @@ TutoronsConnection.prototype.showTooltip = function (node) {
     var region_id = $(node).data('region_id');
     var sq_id = $(node).data('query_id');
 
+    var data = JSON.stringify({ "region": '/api/v1/region/' +  region_id + '/',
+                            "server_query": '/api/v1/server_query/' + sq_id + '/',
+                            "action" : 'show',
+                            });
+
+    $.ajax({
+      url: 'http://localhost:8002/api/v1/viewed_region/',
+      type: 'POST',
+      contentType: 'application/json',
+      data: data,
+      dataType: 'json',
+      processData: false
+    })
     if (this.enabled === false || explanation === undefined) {
         return;
     }
@@ -230,6 +243,7 @@ TutoronsConnection.prototype.showTooltip = function (node) {
         })   
         var data = JSON.stringify({ "region": '/api/v1/region/' +  region_id + '/',
                                     "server_query": '/api/v1/server_query/' + sq_id + '/',
+                                    "action" : 'hide',
                                     });
 
         $.ajax({
