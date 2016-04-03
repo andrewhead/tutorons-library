@@ -46,7 +46,7 @@ TutoronsConnection.prototype.scanDom = function () {
     function addExplanation (tutoronsConn, tutoron) {
         return function (resp) {
 
-            var regions = resp.explained_regions;
+            var regions = resp.regions;
             tutoronsConn.addRegions(tutoron, regions);
             var url = resp.url;
             var start_time = resp.client_start_time;
@@ -183,7 +183,7 @@ TutoronsConnection.prototype.showTooltip = function (node) {
                 "action" : 'show',
                 });
     $.ajax({
-      url: 'http://tutorons.com/api/v1/viewed_region/',
+      url: 'http://tutorons.com/api/v1/view/',
       type: 'POST',
       contentType: 'application/json',
       data: data,
@@ -233,7 +233,7 @@ TutoronsConnection.prototype.showTooltip = function (node) {
                                     "action" : 'hide',
                                 });
         $.ajax({
-          url: 'http://tutorons.com/api/v1/viewed_region/',
+          url: 'http://tutorons.com/api/v1/view/',
           type: 'POST',
           contentType: 'application/json',
           data: data,
