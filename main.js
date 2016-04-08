@@ -50,7 +50,7 @@ TutoronsConnection.prototype.scanDom = function () {
             tutoronsConn.addRegions(tutoron, regions);
             var url = resp.url;
             var start_time = resp.client_start_time;
-            var sq_id = '/api/v1/server_query/' + resp.sq_id + '/';
+            var sq_id = '/api/v1/server_query/' + resp.query_id + '/';
             var data = JSON.stringify({ 'end_time': Date(),
                                         'start_time': start_time,
                                         'server_query': sq_id,
@@ -108,7 +108,7 @@ TutoronsConnection.prototype.explainSelection = function (tutoron, selection) {
             if(resp.error){
                 parent.markRange(range, resp.html, parent.getColor(tutoron), true, 0,0);
             } else{
-                var region = resp.explained_region;
+                var region = resp.region;
                 parent.markRange(range, region.document, parent.getColor(tutoron), true, region.region_id, region.query_id);
             }
         }, 'json'
