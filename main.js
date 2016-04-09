@@ -227,19 +227,20 @@ TutoronsConnection.prototype.showTooltip = function (node) {
             $(div).css('display', 'none');
             $(parent.window.document.body).unbind('mousedown', hide);
             parent.htmlWalker.clearSelection();
-        }
-        var data = JSON.stringify({ "region": '/api/v1/region/' +  region_id + '/',
+            var data = JSON.stringify({ "region": '/api/v1/region/' +  region_id + '/',
                                     "server_query": '/api/v1/server_query/' + sq_id + '/',
                                     "action" : 'hide',
                                 });
-        $.ajax({
-          url: 'http://tutorons.com/api/v1/view/',
-          type: 'POST',
-          contentType: 'application/json',
-          data: data,
-          dataType: 'json',
-          processData: false
-        });
+            $.ajax({
+              url: 'http://tutorons.com/api/v1/view/',
+              type: 'POST',
+              contentType: 'application/json',
+              data: data,
+              dataType: 'json',
+              processData: false
+            });
+        }
+        
     };
     $(this.window.document.body).bind('mousedown', hide);
 
