@@ -12,10 +12,10 @@ var TutoronsConnection = function(window, options) {
 
     this.options = {
          'endpoints': {
-            'wget': 'http://tutorons.com/wget',
-            'regex': 'http://tutorons.com/regex',
-            'css': 'http://tutorons.com/css',
-            'python': 'http://tutorons.com/python',
+            'wget': 'http://www.tutorons.com/wget',
+            'regex': 'http://www.tutorons.com/regex',
+            'css': 'http://www.tutorons.com/css',
+            'python': 'http://www.tutorons.com/python',
         },
         'colors': ['#d99eff', '#ffbbbb', '#cceeaa', '#fff4cc'],
         'contextTutorons': ['css'],
@@ -28,7 +28,7 @@ var TutoronsConnection = function(window, options) {
 
 };
 
-TutoronsConnection.prototype.addRegions = function (tutoron, regions) {
+TutoronsConnection.prototype.addRegions = function (tutoron, regions, viewUrl) {
     var parent = this;
     regions.forEach(function (r) {
         var range = parent.window.document.createRange();
@@ -37,7 +37,7 @@ TutoronsConnection.prototype.addRegions = function (tutoron, regions) {
         var textRanges = parent.htmlWalker.getRangeInText(textNodes, r.start_index, r.end_index + 1);
         range.setStart(textRanges.start.node, textRanges.start.offset);
         range.setEnd(textRanges.end.node, textRanges.end.offset);
-        parent.markRange(range, r.document, parent.getColor(tutoron), false, r.region_id, r.query_id);
+        parent.markRange(range, r.document, parent.getColor(tutoron), false, r.region_id, r.query_id, viewUrl);
     });
 };
 
@@ -46,23 +46,33 @@ TutoronsConnection.prototype.scanDom = function () {
     function addExplanation (tutoronsConn, tutoron) {
         return function (resp) {
 
+            var clientQueryUrl = resp.client_query_url;
+            var viewUrl = resp.view_url;
+            var startTime = resp.client_start_time;
+
             var regions = resp.regions;
-            tutoronsConn.addRegions(tutoron, regions);
-            var url = resp.url;
-            var start_time = resp.client_start_time;
-            var sq_id = '/api/v1/server_query/' + resp.query_id + '/';
-            var data = JSON.stringify({ 'end_time': Date(),
-                                        'start_time': start_time,
-                                        'server_query': sq_id,
-                                    });
-            // We're keeping ajax calls here because the settings we require aren't supported with post.
-            $.ajax({
-              url: url,
-              type: 'POST',
-              contentType: 'application/json',
-              data: data,
-              processData: false
+            tutoronsConn.addRegions(tutoron, regions, viewUrl);
+
+            // Update the client query structure with the runtime of this
+            // client query to be returned.
+            var serverQueryId = '/api/v1/server_query/' + resp.query_id + '/';
+            var clientQueryData = JSON.stringify({
+                end_time: Date(),
+                start_time: startTime,
+                server_query: serverQueryId,
             });
+
+            // We're using calls to the 'ajax' method instead of 'post'
+            // a few places in this file because some critical settings aren't
+            // available with the 'post' method.
+            $.ajax({
+                url: clientQueryUrl,
+                type: 'POST',
+                contentType: 'application/json',
+                data: clientQueryData,
+                processData: false
+            });
+
          };
     }
 
@@ -71,14 +81,13 @@ TutoronsConnection.prototype.scanDom = function () {
     for (tutoron in endpoints) {
         if (endpoints.hasOwnProperty(tutoron)) {
             endpoint = endpoints[tutoron];
-            $.post(endpoint + '/scan',
-                {
-                    'origin': this.window.location.href,
-                    'document': this.window.document.body.innerHTML,
-                    'client_start_time' : Date(),
-                },
-                addExplanation(this, tutoron),
-                'json');
+            $.post(endpoint + '/scan', {
+                origin: this.window.location.href,
+                document: this.window.document.body.innerHTML,
+                client_start_time : Date(),
+            },
+            addExplanation(this, tutoron),
+            'json');
         }
     }
 
@@ -100,23 +109,22 @@ TutoronsConnection.prototype.explainSelection = function (tutoron, selection) {
     }
     var range = selection.getRangeAt(0);
     var parent = this;
-    $.post(this.options.endpoints[tutoron] + '/explain', 
-        {   'origin': this.window.location.href,
-            'text': queryText,
-            'edge_size': contextSize,
-        }, function (resp) {
-            if(resp.error){
-                parent.markRange(range, resp.html, parent.getColor(tutoron), true, 0,0);
-            } else{
-                var region = resp.region;
-                parent.markRange(range, region.document, parent.getColor(tutoron), true, region.region_id, region.query_id);
-            }
-        }, 'json'
-    );
+    $.post(this.options.endpoints[tutoron] + '/explain', {   
+        origin: this.window.location.href,
+        text: queryText,
+        edge_size: contextSize,
+    }, function (resp) {
+        if (resp.error){
+            parent.markRange(range, resp.html, parent.getColor(tutoron), true, -1, -1);
+        } else {
+            var region = resp.region;
+            parent.markRange(range, region.document, parent.getColor(tutoron), true, region.regionId, region.queryId);
+        }
+    }, 'json');
 
 };
 
-TutoronsConnection.prototype.markRange = function (range, explanation, color, showNow, region_id, query_id) {
+TutoronsConnection.prototype.markRange = function (range, explanation, color, showNow, regionId, queryId, viewUrl) {
 
     if (this.isHighlighted(range)) {
         return;
@@ -136,8 +144,9 @@ TutoronsConnection.prototype.markRange = function (range, explanation, color, sh
     };
 
     $(span).data('explanation', explanation);
-    $(span).data('region_id', region_id);
-    $(span).data('query_id', query_id);
+    $(span).data('regionId', regionId);
+    $(span).data('queryId', queryId);
+    $(span).data('viewUrl', viewUrl);
     // Smoothly fade in the highlighting
     $(span).fadeOut('fast', function () {
         $(this).fadeIn('slow', function () {
@@ -174,21 +183,24 @@ TutoronsConnection.prototype.getTooltipWidth = function (node) {
 };
 
 TutoronsConnection.prototype.showTooltip = function (node) {
-    var explanation = $(node).data('explanation');
-    var region_id = $(node).data('region_id');
-    var sq_id = $(node).data('query_id');
 
-    var data = JSON.stringify({"region": '/api/v1/region/' +  region_id + '/',
-                "server_query": '/api/v1/server_query/' + sq_id + '/',
-                "action" : 'show',
-                });
+    var explanation = $(node).data('explanation');
+    var regionId = $(node).data('regionId');
+    var serverQueryId = $(node).data('queryId');
+    var viewUrl = $(node).data('viewUrl');
+
+    var viewData = JSON.stringify({
+        region: '/api/v1/region/' +  regionId + '/',
+        server_query: '/api/v1/server_query/' + serverQueryId + '/',
+        action : 'show',
+    });
     $.ajax({
-      url: 'http://tutorons.com/api/v1/view/',
-      type: 'POST',
-      contentType: 'application/json',
-      data: data,
-      dataType: 'json',
-      processData: false
+        url: viewUrl,
+        type: 'POST',
+        contentType: 'application/json',
+        data: viewData,
+        dataType: 'json',
+        processData: false
     });
 
     if (this.enabled === false || explanation === undefined) {
@@ -227,17 +239,18 @@ TutoronsConnection.prototype.showTooltip = function (node) {
             $(div).css('display', 'none');
             $(parent.window.document.body).unbind('mousedown', hide);
             parent.htmlWalker.clearSelection();
-            var data = JSON.stringify({ "region": '/api/v1/region/' +  region_id + '/',
-                                    "server_query": '/api/v1/server_query/' + sq_id + '/',
-                                    "action" : 'hide',
-                                });
+            var hideData = JSON.stringify({
+                region: '/api/v1/region/' +  regionId + '/',
+                server_query: '/api/v1/server_query/' + serverQueryId + '/',
+                action: 'hide',
+            });
             $.ajax({
-              url: 'http://tutorons.com/api/v1/view/',
-              type: 'POST',
-              contentType: 'application/json',
-              data: data,
-              dataType: 'json',
-              processData: false
+                url: viewUrl,
+                type: 'POST',
+                contentType: 'application/json',
+                data: hideData,
+                dataType: 'json',
+                processData: false
             });
         }
         
