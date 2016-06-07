@@ -12,10 +12,10 @@ var TutoronsConnection = function(window, options) {
 
     this.options = {
          'endpoints': {
-            'wget': 'http://www.tutorons.com/wget',
-            'regex': 'http://www.tutorons.com/regex',
-            'css': 'http://www.tutorons.com/css',
-            'python': 'http://www.tutorons.com/python',
+            'wget': '//tutorons.com/wget',
+            'regex': '//tutorons.com/regex',
+            'css': '//tutorons.com/css',
+            'python': '//tutorons.com/python',
         },
         'colors': ['#d99eff', '#ffbbbb', '#cceeaa', '#fff4cc'],
         'contextTutorons': ['css'],

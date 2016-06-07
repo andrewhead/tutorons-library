@@ -7,10 +7,10 @@
             document.addEventListener("DOMContentLoaded", function(event) {
                 var tutoronsConnection = new tutorons.TutoronsConnection(window, {
                     'endpoints': {
-                        'wget': 'http://127.0.0.1:8002/wget',
-                        'regex': 'http://127.0.0.1:8002/regex',
-                        'css': 'http://127.0.0.1:8002/css',
-                        'python': 'http://127.0.0.1:8002/python',
+                        'wget': '//127.0.0.1:8002/wget',
+                        'regex': '//127.0.0.1:8002/regex',
+                        'css': '//127.0.0.1:8002/css',
+                        'python': '//127.0.0.1:8002/python',
                     }});
                 tutoronsConnection.scanDom();
             });
