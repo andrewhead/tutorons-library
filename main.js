@@ -323,8 +323,9 @@ TutoronsConnection.prototype.styleTooltip = function (div) {
     });
     $(div).find('div.example-code').css({
         'display': 'block',
-        'margin-top': '10px',
-        'padding': '10px',
+        'margin-top': '1em',
+        'margin-bottom': '1em',
+        'padding': '1em',
         'font-size': '14px',
         'font-weight': 'normal',
         'background-color': '#F2EEFF',
