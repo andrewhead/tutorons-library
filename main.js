@@ -3,7 +3,6 @@
 var $ = require('jquery');
 var _ = require('lodash');
 var HtmlWalker = require('./html-walker').HtmlWalker;
-require('jquery-ui');
 
 var TutoronsConnection = function(window, options) {
 
@@ -269,7 +268,7 @@ TutoronsConnection.prototype.showTooltip = function (node) {
     });
 
     // Fade in the tooltip
-    $(div).show('scale', {}, 200);
+    $(div).fadeIn('fast');
 
 };
 

@@ -28,16 +28,14 @@
   ],
   "devDependencies": {
     "browserify": "^10.2.3",
-    "jpm": "^1.0.0",
-    "lodash": "^3.10.1"
+    "jpm": "^1.0.0"
   },
   "main": "main.js",
   "homepage": "https://github.com/andrewhead/tutorons-library",
   "id": "jid1-I0dZCbgWATj1mQ",
   "description": "A web library for loading micro-explanations of online code.",
   "dependencies": {
-    "jquery": "^2.1.4",
-    "jquery-ui": "^1.10.5",
-    "lodash": "^3.10.1"
+    "jquery": "^3.3.1",
+    "lodash": "^4.17.10"
   }
 }
